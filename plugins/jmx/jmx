@@ -6,7 +6,7 @@ from optparse import OptionParser
 
 def get_metrics(url, user, beanname, command):
     current = os.path.dirname(os.path.abspath(__file__))
-    jmx_jar = current + "/../../bin/cmdline-jmxclient.jar"
+    jmx_jar = current + "/cmdline-jmxclient.jar"
     out, err = subprocess.Popen("java -jar " + jmx_jar + " " + user + " " + url + " " + beanname + " " + command , shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
     for ret in err.splitlines():
         return ret[-1]
