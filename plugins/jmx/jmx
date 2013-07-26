@@ -1,0 +1,48 @@
+#!/usr/bin/python
+import os
+import sys
+import subprocess
+from optparse import OptionParser
+
+def get_metrics(url, user, beanname, command):
+    current = os.path.dirname(os.path.abspath(__file__))
+    jmx_jar = current + "/../../bin/cmdline-jmxclient.jar"
+    out, err = subprocess.Popen("java -jar " + jmx_jar + " " + user + " " + url + " " + beanname + " " + command , shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    for ret in err.splitlines():
+        return ret[-1]
+
+def munin(url, user, beanname, commands):
+    for command in commands:
+        metrics = get_metrics(url, user, beanname, command)
+        print command + ".value " + str(metrics)
+
+def config(beanname, commands):
+    print "graph_title jmx " + beanname
+    print "graph_category java"
+    
+    for command in commands:
+        print command + ".label " + command
+        print command + ".draw LINE1"
+
+if __name__ == "__main__":
+    if os.environ.get('url'):
+        url = os.environ.get('url')
+    else:
+        url = 'localhost:8086'
+
+    if os.environ.get('user'):
+        user = os.environ.get('user')
+    else:
+        user = '-'
+
+    beanname = os.environ.get('beanname')
+    if os.environ.get('commands'):
+        commands = os.environ.get('commands').split(',')
+    else:
+        commands = []
+
+    if len(sys.argv) > 1 and sys.argv[1] == "config":
+        config(beanname, commands)
+    else:
+        munin(url, user, beanname, commands)
+
