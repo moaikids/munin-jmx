@@ -16,13 +16,17 @@ def munin(url, user, beanname, commands):
         metrics = get_metrics(url, user, beanname, command)
         print command + ".value " + str(metrics)
 
-def config(beanname, commands):
+def config(beanname, commands, warnings=[], criticals=[]):
     print "graph_title jmx " + beanname
     print "graph_category java"
     
-    for command in commands:
+    for i, command in enumerate(commands):
         print command + ".label " + command
         print command + ".draw LINE1"
+        if len(warnings) > i and warnings[i] and warnings[i] != '-':
+            print command + ".warning " + str(warnings[i])
+        if len(criticals) > i and criticals[i] and criticals[i] != '-':
+            print command + ".critical " + str(criticals[i])
 
 if __name__ == "__main__":
     if os.environ.get('url'):
@@ -41,8 +45,18 @@ if __name__ == "__main__":
     else:
         commands = []
 
+    if os.environ.get('warnings'):
+        warnings = os.environ.get('warnings').split(',')
+    else:
+        warnings = []
+
+    if os.environ.get('criticals'):
+        criticals = os.environ.get('criticals').split(',')
+    else:
+        criticals = []
+
     if len(sys.argv) > 1 and sys.argv[1] == "config":
-        config(beanname, commands)
+        config(beanname, commands, warnings, criticals)
     else:
         munin(url, user, beanname, commands)
 
